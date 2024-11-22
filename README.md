@@ -48,7 +48,7 @@ contact: `james.kessler@noaa.gov`
 A schism grid can consist of tris and quads (above).  Both tris and quads are considered elements (or cells).  Elements are defined by their nodes (below):
 ![elements](figs/elements.png)
 
-However, all the diagnostic variables output by SCHISM are actually represented **on the nodes** so there's not a straightforward way to make a nice plot.  (One _can_ create a pseudocolor plot of the data on the nodes but this isn't very nice to look at---lots of overlapping dots or white space, due to the variable mesh spacing)
+However, all the prognostic variables output by SCHISM are actually represented **on the nodes** so there's not a straightforward way to make a nice plot.  (One _can_ create a pseudocolor plot of the data on the nodes but this isn't very nice to look at---lots of overlapping dots or white space, due to the variable mesh spacing)
 
 Instead we can define the area surrounding each node which is closest to that node. These polygons are identical to the definition of [Voronoi (a.k.a Thiessen) polygons](https://en.wikipedia.org/wiki/Voronoi_diagram). This is effecitvely the physical space that a node represents so it's very well suited for making graphics. The Voronoi polygons for the same grid are shown below.
 
