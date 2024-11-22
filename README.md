@@ -17,8 +17,8 @@
 - sample plotting scripts:
     - `plot_var.py`  (requires: matplotlib, geopandas, numpy and netCDF4)
     - `plot_var.R`   (requires: sf)
-- spatial_files/ 
-- figs/
+- `spatial_files/`
+- `figs/`
 
 
 
