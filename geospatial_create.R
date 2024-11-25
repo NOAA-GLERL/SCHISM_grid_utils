@@ -158,6 +158,9 @@ if(gen_vor){
 }
 
 
+# =====================================================================================
+# ==================    END OF GEOSPATIAL CREATE  =====================================
+# =====================================================================================
 
 
 # optionally plot new objects for debug:
@@ -167,26 +170,26 @@ if(gen_vor){
 
 
 # plot a subregion
-els <- st_crop(els,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
-nodes <- st_crop(nodes,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
-vor <- st_crop(vor,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
-
-
-par(mar=c(0,0,0,0))
-plot(st_geometry(els), border='green')
-plot(st_geometry(nodes), pch=20, add=T)
-legend('bottomleft', legend=c('element faces', 'nodes'), col=c('green','black'), lwd=c(1,NA), pch=c(NA,20), cex=2, inset=.01)
-
-par(mar=c(0,0,0,0))
-plot(st_geometry(els), border='green')
-plot(st_geometry(nodes), pch=20, add=T)
-plot(st_geometry(vor), border='purple', add=T)
-legend('bottomleft', legend=c('element faces', 'vornoi faces', 'nodes'), col=c('green','purple', 'black'), 
-	   lwd=c(1,1,NA), pch=c(NA,NA,20), cex=2, inset=.01)
-
-
-par(mar=c(0,0,0,0))
-plot(st_geometry(nodes), pch=20)
-plot(st_geometry(vor), border='purple', add=T)
-legend('bottomleft', legend=c('Vornoi faces', 'nodes'), col=c('purple', 'black'), lwd=c(1,NA), pch=c(NA,20), cex=2, inset=.01)
-
+#els <- st_crop(els,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
+#nodes <- st_crop(nodes,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
+#vor <- st_crop(vor,  xmin=-75.5, xmax=-75.0, ymin=38.7, ymax=39.0)
+#
+#
+#par(mar=c(0,0,0,0))
+#plot(st_geometry(els), border='green')
+#plot(st_geometry(nodes), pch=20, add=T)
+#legend('bottomleft', legend=c('element faces', 'nodes'), col=c('green','black'), lwd=c(1,NA), pch=c(NA,20), cex=2, inset=.01)
+#
+#par(mar=c(0,0,0,0))
+#plot(st_geometry(els), border='green')
+#plot(st_geometry(nodes), pch=20, add=T)
+#plot(st_geometry(vor), border='purple', add=T)
+#legend('bottomleft', legend=c('element faces', 'vornoi faces', 'nodes'), col=c('green','purple', 'black'), 
+#	   lwd=c(1,1,NA), pch=c(NA,NA,20), cex=2, inset=.01)
+#
+#
+#par(mar=c(0,0,0,0))
+#plot(st_geometry(nodes), pch=20)
+#plot(st_geometry(vor), border='purple', add=T)
+#legend('bottomleft', legend=c('Vornoi faces', 'nodes'), col=c('purple', 'black'), lwd=c(1,NA), pch=c(NA,20), cex=2, inset=.01)
+#

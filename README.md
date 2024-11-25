@@ -48,9 +48,9 @@ contact: `james.kessler@noaa.gov`
 A schism grid can consist of tris and quads (above).  Both tris and quads are considered elements (or cells).  Elements are defined by their nodes (below):
 ![elements](figs/elements.png)
 
-However, all the prognostic variables output by SCHISM are actually represented **on the nodes** so there's not a straightforward way to make a nice plot.  (One _can_ create a pseudocolor plot of the data on the nodes but this isn't very nice to look at---lots of overlapping dots or white space, due to the variable mesh spacing)
+However, all the state variables output by SCHISM are actually represented **on the nodes** so there's not a straightforward way to make a nice plot.  (Although one can create a pseudocolor plot of the data on the nodes, it's not very nice to look at---lots of overlapping dots or white space, due to the variable resolution)
 
-Instead we can define the area surrounding each node which is closest to that node. These polygons are identical to the definition of [Voronoi (a.k.a Thiessen) polygons](https://en.wikipedia.org/wiki/Voronoi_diagram). This is effectively the physical space that a node represents so it's very well suited for making graphics. The Voronoi polygons for the same grid are shown below.
+Instead we can define, as a polygon, the area surrounding each node which is closest to that node. These polygons are identical to the definition of [Voronoi (a.k.a Thiessen) polygons](https://en.wikipedia.org/wiki/Voronoi_diagram). This is effectively the physical space that a node represents so it's very well suited for making graphics. The Voronoi polygons for the same grid are shown below.
 
 ![voronoi](figs/voronoi.png)
 
@@ -75,11 +75,14 @@ nc = netCDF4.Dataset('schout_deb.nc')
 Z = nc['depth'][:] 
 vor = gpd.read_file('spatial_files/deb_vor.shp')
 vor['depth'] = depth
-vor.plot('varname', legend=True)
+vor.plot('depth', legend=True)
 ```
+
+![voronoi_depth](figs/vor_depth.png)
+
 ---
 
-If for whatever reason, one desires to instead plot on the **native grid** (i.e. on the elements), we can compute a (non-weighted) average of from the nodes that make up the elements. The association of nodes to elements is encoded in the 2DM file of course, but it's also contained in the elements KML or shapefile(see below).  To allow for polymorphism, tris have a 4th node represented as `-99` or missing.  Examples of averaging onto elements are provided in `plot_var.py` and `plot_var.R`
+If for whatever reason, one desires to instead plot on the **native grid** (i.e. on the elements), we can compute a (non-weighted) average of from the nodes that make up the elements. The association of nodes to elements is encoded in the 2DM file of course, but it's also contained in the elements KML or shapefile (see below).  To allow for polymorphism, tris have a 4th node represented as `-99` or missing.  Examples of averaging onto elements are provided in `plot_var.py` and `plot_var.R`
 
 ```
 > els
@@ -113,4 +116,7 @@ First 10 features:
 2343 52 74,78,77,-99 11.360674   tri POLYGON ((-74.82015 40.1283...
 ```
 
+The result of averaging depth onto the elements and plotting is shown below. This requires a few extra steps (as noted above) and is technically _LESS_ accurate than plotting the Voronoi polygons, one may still prefer this method in order to view data on the native mesh.
+
+![elements)depth](figs/els_depth.png)
 
