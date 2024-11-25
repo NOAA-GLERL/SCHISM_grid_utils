@@ -1,4 +1,4 @@
 
-*.2dm linguist-generated
-*.nc linguist-generated
-spatial_files/* linguist-generated
+*.2dm linguist-documentation
+*.nc linguist-documentation
+spatial_files/* linguist-documentation
