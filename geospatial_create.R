@@ -2,7 +2,8 @@
 # author: James Kessler (james.kessler@noaa.gov)
 # initially developed for FVCOM, Sep 2020 
 # updated Sep 2023 to use SF instead of soon to be deprecated rgdal, sp, etc.
-# updated again in Oct 2024 for schism polymorphism
+# updated Oct 2024 for schism polymorphism
+# updated Apr 2025 to handle BOTH tri-only and tri+quad grids
 
 library(sf)
 
@@ -11,12 +12,12 @@ library(sf)
 #==============================================================================================
 
 # grid specific stuff
-nhdrs <- 1           	         # number of header lines in 2dm
-lk <- 'deb' 				     # prefix used for saving output files (whatever you'd like)
-fin <- 'deb.2dm'                 # name of 2dm file
+nhdrs <- 3           	         # number of header lines in 2dm
+lk <- 'o4'  				     # prefix used for saving output files (whatever you'd like)
+fin <- 'o4-v02x10-0m_igld85.2dm'                 # name of 2dm file
 
 # geospatial stuff (if proj_native and proj_out are identical, no transform will occur)
-proj_native <- '+proj=longlat +datum=WGS84' # native coordinate ref system (CRS)
+proj_native <- '+proj=longlat +datum=WGS84'  #  EPSG:3174 NAD83 / Great Lakes Albers
 proj_out <-    '+proj=longlat +datum=WGS84' # desired output CRS for shp/kml (usually lat/lon)
 
 # glalbers for ontario grid:
@@ -25,10 +26,10 @@ proj_out <-    '+proj=longlat +datum=WGS84' # desired output CRS for shp/kml (us
 
 gen_nodes <- T # generate nodes shapefile/kml
 gen_elems <- T # generate elems shapefile/kml
-gen_vor   <- T # gen voronoi polygons (slow for big grids; *REQUIRES* nodes and elems are generated)
+gen_vor   <- F # gen voronoi polygons (slow for big grids; *REQUIRES* nodes and elems are generated)
 
 kml_out <- F # save to kml?
-shp_out <- F # save to ESRI shp?
+shp_out <- T # save to ESRI shp?
 
 #==============================================================================================
 #==============================================================================================
@@ -41,7 +42,9 @@ shp_out <- F # save to ESRI shp?
 trans_grid <- proj_out == proj_native     # shall we transform the grid?
 
 # first read in entire file just to get element count for next step
-geoms <- read.table('deb.2dm',skip=1, fill=T, colClasses=c('character',rep('numeric',6)))[,1]
+options(warn=-1) # supress warning about ragged array on read in
+geoms <- read.table(fin,skip=nhdrs, fill=T, colClasses=c('character',rep('numeric',6)))[,1]
+options(warn=0)
 num_els <- sum(grepl('E3T|E4Q', geoms))
 num_nds <- sum(geoms == 'ND')
 cat(sprintf('identified %i nodes and %i elements in your 2dm\n', num_nds, num_els))
@@ -51,15 +54,18 @@ cat(sprintf('identified %i nodes and %i elements in your 2dm\n', num_nds, num_el
 options(warn=-1)
 vertices <- read.table(fin,skip=nhdrs, nrow=num_els, fill=T, colClasses=c('character',rep('numeric',6)))
 options(warn=0)
-isquad <- vertices[,1] == 'E4Q' # logical: IS it a QUAD?
+isquad <- vertices[,1] == 'E4Q' # logical vector: whether or not EACH element is QUAD?
+tris_only <- sum(isquad)==0     # logical scalar: is this a tris only grid?
 idx <- vertices[,2]
+
+cat(sprintf('elements consist of %i tris and %i quads\n', sum(!isquad), sum(isquad)))
 
 q_idx <- as.matrix(vertices[isquad,c(3,4,5,6,3)]) #quad indices
 t_idx <- as.matrix(vertices[!isquad,c(3,4,5,3)])  #tri indices
 
 nd_info <- read.table(fin, skip=nhdrs+num_els)
-deps <- nd_info[,5]
-crds <- nd_info[,3:4]
+deps <- nd_info[,5]				
+crds <- nd_info[,3:4]              
 
 
 
@@ -92,15 +98,17 @@ if (gen_elems){
 
 
 	print('creating geospatial elements objects:')
-	print('generating quads...')
 	poly_list <- list()
-	for (i in 1:nrow(lonq)) poly_list[i] <- list(st_polygon(list(cbind(lonq[i,],latq[i,]))))
-	quads <- st_sf(st_sfc(poly_list))
-	quads$id <- idx[isquad]
-	#quads$nodes <- split(q_idx[,-5], row(q_idx[,-5])) # this list works but can't be written out
-	quads$nodes <- apply(q_idx[,-5], 1, function(x) paste(sprintf('%i', x), collapse=','))
-	quads$depth <- apply(matrix(deps[q_idx[,-1]], ncol=4, byrow=F), 1, mean)
-	quads$shape <- 'quad'
+	if (!tris_only){ # do quad stuff
+		print('generating quads...')
+		for (i in 1:nrow(lonq)) poly_list[i] <- list(st_polygon(list(cbind(lonq[i,],latq[i,]))))
+		quads <- st_sf(st_sfc(poly_list))
+		quads$id <- idx[isquad]
+	   #quads$nodes <- split(q_idx[,-5], row(q_idx[,-5])) # this list works but can't be written out
+		quads$nodes <- apply(q_idx[,-5], 1, function(x) paste(sprintf('%i', x), collapse=','))
+		quads$depth <- apply(matrix(deps[q_idx[,-1]], ncol=4, byrow=F), 1, mean)
+		quads$shape <- 'quad'
+	}
 
 	print('generating tris...')
 	poly_list <- list()
@@ -113,8 +121,9 @@ if (gen_elems){
 	tris$shape <- 'tri'
 
 
-	print('combining quads and tris into a single object...')
-	els <- rbind(quads, tris)
+#	print('combining quads and tris into a single object...')
+	if (!tris_only) els <- rbind(quads, tris)  # merge quads and tris
+	if (tris_only) els <- tris                 # simply rename tris to els for write out
 	st_crs(els) <- proj_native
 	if(trans_grid) els <- st_transform(els, proj_out)
 	if(num_els != nrow(els)) stop('els object had the wrong number of elements, check 2DM file')
