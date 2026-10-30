@@ -1,4 +1,4 @@
-#!/bin/Rscript
+!/bin/Rscript
 # author: James Kessler (james.kessler@noaa.gov)
 # initially developed for FVCOM, Sep 2020 
 # updated Sep 2023 to use SF instead of soon to be deprecated rgdal, sp, etc.
